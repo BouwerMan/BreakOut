@@ -39,8 +39,6 @@ typedef struct Brick {
     int destroyed;
 } Brick;
 
-SDL_Window* screen = NULL;
-SDL_Renderer* renderer = NULL;
 SDL_Event event;
 SDL_Color bgc = {0};
 
@@ -139,36 +137,12 @@ int Sprite_Collide(Brick brick, Ball ball) {
 
 };
 
-int collide(Brick brick, Ball* ball) {
-    SDL_Rect rect = brick.rect;
-
-    // brick is object1 and ball is object2 for the following vars
-    int left1, left2;
-    int right1, right2;
-    int top1, top2;
-    int bottom1, bottom2;
-
-    left1 = rect.x;
-    left2 = ball->x - ball->radius;
-    right1 = rect.x + rect.w;
-    right2 = ball->x + ball->radius;
-    top1 = rect.y;
-    top2 = ball->y - ball->radius;
-    bottom1 = rect.y + rect.h;
-    bottom2 = ball->y + ball->radius;
-
-    if (bottom1 < top2) return(0);
-    if (top1 > bottom2) return(0);
-
-    if (right1 < left2) return(0);
-    if (left1 > right2) return(0);
-
-    Log(LOG_INFO, "Found collision!");
-    return(1);
+int collide(Brick brick, Ball ball) {
+    return 0; 
 }
-
+    
 // TODO: Color properly
-void initBlocks(Brick bricks[BLOCKS_TALL][BLOCKS_WIDE]) {
+void initBricks(Brick bricks[BLOCKS_TALL][BLOCKS_WIDE]) {
     Log(LOG_INFO, "Initializing bricks");
     Brick brick = {0};
     for (size_t i = 0; i < BLOCKS_TALL; i++) {
@@ -190,7 +164,7 @@ void initBlocks(Brick bricks[BLOCKS_TALL][BLOCKS_WIDE]) {
     }
 }
 
-void initWindow() {
+void initWindow(SDL_Window *screen, SDL_Renderer *renderer) {
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, SDL_WINDOW_SHOWN | SDL_RENDERER_PRESENTVSYNC, &screen, &renderer);
     if (!screen) {
@@ -219,10 +193,13 @@ void done() {
 }
 
 int main(void) {
-    initWindow();
+
+    SDL_Window* screen = NULL;
+    SDL_Renderer* renderer = NULL;
+    initWindow(screen, renderer);
     
     Brick bricks[BLOCKS_TALL][BLOCKS_WIDE] = {0};
-    initBlocks(bricks);
+    initBricks(bricks);
 
     next_time = SDL_GetTicks() + TICK_INTERVAL;
 
@@ -252,7 +229,6 @@ int main(void) {
             switch (event.type)
             {
             case SDL_KEYDOWN:
-                // keyPressed = event.key.keysym.sym;
                 switch (event.key.keysym.sym)
                 {
                 case QUIT_KEY:

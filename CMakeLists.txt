@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27.4)
-project(SDLTest)
+project(BreakOut)
 
 find_package(SDL2 REQUIRED)
 
@@ -11,7 +11,7 @@ set(CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} -O2 -Wall -Wextra"
 )
 
-add_executable(SDLTest ${SOURCES})
+add_executable(BreakOut ${SOURCES})
 
 # set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 # set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
