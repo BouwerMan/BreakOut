@@ -67,13 +67,7 @@ void Log(int type, char* msg) {
     
 }
 
-void drawRectangle(int h, int w, int x, int y, SDL_Color color) {
-    SDL_Rect rect;
-    rect.h = h;
-    rect.w = w;
-    rect.x = x;
-    rect.y = y;
-
+void drawRectangle(SDL_Renderer *renderer, SDL_Rect rect, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, &rect);
 }
@@ -119,11 +113,11 @@ int Sprite_Collide(Brick brick, Ball ball) {
     int bottom1, bottom2;
 
     left1 = rect.x;
-    left2 = ball.x;
+    left2 = ball.x - ball.radius;
     right1 = rect.x + rect.w;
     right2 = ball.x + ball.radius;
     top1 = rect.y;
-    top2 = ball.y;
+    top2 = ball.y - ball.radius;
     bottom1 = rect.y + rect.h;
     bottom2 = ball.y + ball.radius;
 
@@ -132,12 +126,13 @@ int Sprite_Collide(Brick brick, Ball ball) {
 
     if (right1 < left2) return(0);
     if (left1 > right2) return(0);
-
+    
+    Log(LOG_INFO, "Found Collision!");
     return(1);
-
 };
 
 int collide(Brick brick, Ball ball) {
+    SDL_Rect rect = brick.rect;
     return 0; 
 }
     
@@ -173,18 +168,18 @@ void initWindow(SDL_Window *screen, SDL_Renderer *renderer) {
     SDL_SetWindowTitle(screen, "SDL2Test");
 }
 
-void drawBlocks(Brick bricks[BLOCKS_TALL][BLOCKS_WIDE]) {
+void drawBlocks(SDL_Renderer *renderer, Brick bricks[BLOCKS_TALL][BLOCKS_WIDE]) {
     for (size_t i = 0; i < BLOCKS_TALL; i++) {
         for (size_t j = 0; j < BLOCKS_WIDE; j++) {
             if (bricks[i][j].destroyed) { continue; }
             Brick brick = bricks[i][j];
-            drawRectangle(brick.rect.h, brick.rect.w, brick.rect.x, brick.rect.y, brick.color);
+            drawRectangle(renderer, brick.rect, brick.color);
         }
     }
 }
 
 /* Cleans up */
-void done() {
+void done(SDL_Renderer *renderer, SDL_Window *screen) {
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(screen);
 	//Quit SDL
@@ -256,7 +251,6 @@ int main(void) {
             ball.speedY *= -1;
         }
         
-        //! Unsure if this works properly lol
         // Ball rectangle collision
         for (size_t i = 0; i < BLOCKS_TALL; i++) {
             for (size_t j = 0; j < BLOCKS_WIDE; j++) {
@@ -265,41 +259,16 @@ int main(void) {
                 // Probably not worth any potential (virtually none) performance improvements.
                 if (bricks[i][j].destroyed) { continue; }
                 Brick brick = bricks[i][j];
-                if(collide(brick, &ball)) {
-                    
-                }
-                //if (Sprite_Collide(brick, ball)) { break; }
-                // SDL_Rect rect = brick.rect;
-
-                // // WTF is this mess
-                // bool top = (ball.y + ball.radius == rect.y) && ((ball.x <= (rect.x + rect.w)) && (ball.x >= rect.x));
-                // bool bottom = (ball.y - ball.radius == rect.y + rect.h) && ((ball.x <= (rect.x + rect.w)) && (ball.x >= rect.x));
-                // bool right = (ball.x - ball.radius == rect.x + rect.w) && ((ball.y <= (rect.y + rect.h)) && (ball.y >= rect.y));
-                // bool left = (ball.x + ball.radius == rect.x) && ((ball.y <= (rect.y + rect.h)) && (ball.y >= rect.y));
-                
-                // if (top || bottom) {
-                //     Log(LOG_INFO, "Top or Bottom collision.");
-                //     ball.speedY *= -1;
-                //     // "Destroys" brick
-                //     brick.color = (SDL_Color){0};
-                //     bricks[i][j].destroyed = 1;
-                //     collision = true;
+                Sprite_Collide(brick, ball);
+                // if(collide(brick, ball)) {
+                //     
                 // }
-                // if (right || left) {
-                //     Log(LOG_INFO, "Right or Left collision.");
-                //     ball.speedX *= -1;
-                //     // "Destroys" brick
-                //     brick.color = (SDL_Color){0};
-                //     bricks[i][j].destroyed = 1;
-                //     collision = true;
-                // }
-                // if (collision) { break; }
             }
         }
 
         // Rendering everything
         drawCircle(renderer, ball);
-        drawBlocks(bricks);
+        drawBlocks(renderer, bricks);
         SDL_SetRenderDrawColor(renderer, bgc.r, bgc.g, bgc.b, bgc.a);
         SDL_RenderPresent(renderer);
         
@@ -308,6 +277,6 @@ int main(void) {
         next_time += TICK_INTERVAL;
     }
 
-    done();
+    done(renderer, screen);
     return 0;
 }
